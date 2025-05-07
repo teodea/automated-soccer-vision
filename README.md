@@ -17,7 +17,6 @@ The system includes:
   <img src="docs/final_output_sample.png" width="600"/>
 </p>
 
-
 ## 🧠 Technologies Used
 
 - Python 3.10
