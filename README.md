@@ -17,21 +17,6 @@ The system includes:
   <img src="docs/final_output_sample.png" width="600"/>
 </p>
 
-## 📁 Folder Structure
-
-📦project_root
-┣ 📂models
-┣ 📂data
-┣ 📂utils
-┣ 📜main.py
-┣ 📜tracker.py
-┣ 📜team_assigner.py
-┣ 📜camera_movement_estimator.py
-┣ 📜speed_and_distance_estimator.py
-┣ 📜view_transformer.py
-┣ 📜player_ball_assigner.py
-┣ 📜README.md
-
 
 ## 🧠 Technologies Used
 
