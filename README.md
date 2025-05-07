@@ -14,7 +14,7 @@ The system includes:
 - **Final Output** as both annotated video and structured machine-readable data
 
 <p align="center">
-  <img src="docs/final_output_sample.png" width="600"/>
+  <img src="output_videos/pictures/annotated_video.png" width="600"/>
 </p>
 
 ## 🧠 Technologies Used
