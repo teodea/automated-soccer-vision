@@ -1,0 +1,7 @@
+- Set up and research market (complete)
+- Implement core vision processing improvements
+- Integrate new calibration routines
+- Update tracking algorithms
+- Test detection accuracy on sample footage
+- Optimize frame processing pipeline
+- Document changes and prepare for merge
