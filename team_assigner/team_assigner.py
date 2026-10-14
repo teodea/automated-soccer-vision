@@ -1,9 +1,11 @@
 from sklearn.cluster import KMeans
 
 class TeamAssigner:
-    def __init__(self):
+    def __init__(self, fixed_team_ids=None):
         self.team_colors = {}
         self.player_team_dict = {}
+        # track_id -> team, for players whose kit colour does not match their team (e.g. goalkeepers)
+        self.fixed_team_ids = fixed_team_ids or {}
 
     def assign_team_color(self, frame, player_detections):
         player_colors = []
@@ -55,9 +57,8 @@ class TeamAssigner:
         return player_color
 
     def get_player_team(self, frame, player_bbox, player_id):
-        if player_id == 87 or player_id == 115: # Hard coding the team id for goalkeeper (detected with player id 87 and 115)
-            team_id = 1
-            return team_id
+        if player_id in self.fixed_team_ids:
+            return self.fixed_team_ids[player_id]
 
         if player_id in self.player_team_dict:
             return self.player_team_dict[player_id]

@@ -1,7 +1,7 @@
-ultralytics
-supervision
-opencv-python
-numpy
-pandas
-scikit-learn
-roboflow
+ultralytics>=8.3.86,<8.4
+supervision>=0.25,<0.26
+opencv-python>=4.10
+scikit-learn>=1.5
+pandas>=2.2
+numpy>=1.26
+roboflow  # only for training/train_yolo11x.ipynb

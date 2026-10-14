@@ -20,6 +20,9 @@ venv/
 *.mov
 runs/
 stubs/*.pkl
+# cached tracks for the sample clip, so the pipeline runs without weights (main.py --use-stubs)
+!stubs/track_stubs_yolo11_final.pkl
+!stubs/camera_movement_stub.pkl
 
 # Datasets (downloaded from Roboflow at training time)
 training/football-players-detection-*/

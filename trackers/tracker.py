@@ -10,11 +10,15 @@ import numpy as np
 import pandas as pd
 
 class Tracker:
-    def __init__(self, model_path):
-        self.model = YOLO(model_path)
+    def __init__(self, model_path=None, referee_track_ids=()):
+        self.model_path = model_path
+        self.model = None  # loaded lazily, so the pipeline can run from stubs without weights
         self.tracker = sv.ByteTrack()
+        self.referee_track_ids = set(referee_track_ids)
 
     def detect_frames(self, frames):
+        if self.model is None:
+            self.model = YOLO(self.model_path)
         batch_size = 20
         detections = []
         for i in range(0, len(frames), batch_size):
@@ -61,7 +65,7 @@ class Tracker:
                 cls_id = frame_detection[3]
                 track_id = frame_detection[4]
 
-                if track_id in [17, 52, 96, 100, 226]:  # manually placing some referee ids
+                if track_id in self.referee_track_ids:  # manual correction for referees the detector labels as players
                     cls_id = cls_names_inv['referee']
 
                 if cls_id == cls_names_inv['player']:
@@ -163,7 +167,7 @@ class Tracker:
         team2 = team2_num_frames / (team1_num_frames + team2_num_frames)
 
         cv2.putText(frame, f"Team 1 Ball Control: {team1*100:.2f}%", (1400, 900), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3)
-        cv2.putText(frame, f"Team 1 Ball Control: {team2*100:.2f}%", (1400, 950), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3)
+        cv2.putText(frame, f"Team 2 Ball Control: {team2*100:.2f}%", (1400, 950), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3)
 
         return frame
 
