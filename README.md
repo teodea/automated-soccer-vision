@@ -1,38 +1,86 @@
-# Automated Soccer Match Analysis using Deep Learning
+# Automated Soccer Match Analysis with YOLOv11
 
-This repository contains the full implementation of a modular system for the automated analysis of soccer matches using deep learning and computer vision techniques. The system processes single-camera broadcast footage and extracts tactical and physical metrics from match play.
-
-## 🔍 Project Overview
-
-The system includes:
-- **Object Detection** using YOLOv11 (players, ball, referees, goalkeepers)
-- **Tracking** via ByteTrack for consistent object IDs
-- **Team Assignment** based on jersey color clustering
-- **Camera Stabilization** using optical flow and Lucas-Kanade feature tracking
-- **View Transformation** from image space to top-down field coordinates
-- **Statistical Analysis** including player speed, distance, and ball possession
-- **Final Output** as both annotated video and structured machine-readable data
+Capstone project for ECE 785 (University of Miami). The system takes single-camera broadcast footage of a soccer match and produces an annotated video with player and ball tracking, team assignment, ball possession, and per-player speed and distance.
 
 <p align="center">
-  <img src="annotated_video.png" width="600"/>
+  <img src="assets/annotated_video.png" width="700" alt="Annotated output frame"/>
 </p>
 
-## 🧠 Technologies Used
+## Credits
 
-- Python 3.10
-- YOLOv11 (via [Ultralytics](https://github.com/ultralytics/ultralytics))
-- OpenCV
-- NumPy
-- Scikit-learn (for KMeans clustering)
-- Roboflow (for dataset creation and labeling)
+The structure of the analysis pipeline (tracker, team assigner, camera movement estimator, view transformer, speed/distance estimator) follows the public tutorial **[football_analysis](https://github.com/abdullahtarek/football_analysis) by Abdullah Tarek**. The dataset is the [Football Players Detection dataset](https://universe.roboflow.com/roboflow-jvuqo/football-players-detection-3zvbc/dataset/1) on Roboflow Universe.
 
-## 📊 Dataset
+## What I did
 
-The object detection model was trained on a custom Roboflow dataset containing annotated Bundesliga match footage:
-[Football Players Detection Dataset – Roboflow Universe](https://universe.roboflow.com/roboflow-jvuqo/football-players-detection-3zvbc/dataset/1)
+- **Fine-tuned YOLOv11x** (Ultralytics) on the Roboflow dataset for 4 classes: player, goalkeeper, referee, ball. I used it instead of the older YOLO models from the tutorial and compared it against a YOLOv5l baseline.
+- **Ran hyperparameter experiments**: AdamW optimizer, `lr0=0.002` with final LR factor `0.01`, a 3-epoch warm-up, mixed precision (AMP), and different image sizes (640 / 832), batch sizes and epoch budgets. See [`training/train_yolo11x.ipynb`](training/train_yolo11x.ipynb).
+- **Plugged the fine-tuned detector into the full pipeline** and evaluated it end to end on match footage.
+- **Wrote the capstone report** covering the method, the experiments and their limitations.
 
-- 612 training images
-- 38 validation images
-- 13 test images
-- Resolution: 1920x1080
-- Augmentations: horizontal flip, brightness/saturation adjustments
+## Results
+
+Best fine-tuned YOLOv11x run, on the validation split (38 images, 905 objects):
+
+| Metric | Value |
+|---|---|
+| mAP@50 | **0.866** |
+| mAP@50-95 | **0.649** |
+
+The ball is the hardest class: it is very small at 640 px and often blurred by motion.
+
+## Pipeline
+
+1. **Detection**: fine-tuned YOLOv11x finds players, goalkeepers, referees and the ball.
+2. **Tracking**: ByteTrack (via `supervision`) keeps object IDs stable across frames.
+3. **Team assignment**: K-Means on jersey colors splits players into two teams.
+4. **Ball interpolation**: missing ball detections are filled with pandas interpolation.
+5. **Camera movement**: Lucas-Kanade optical flow compensates for camera panning.
+6. **View transformation**: a perspective transform maps pixels to field coordinates in meters.
+7. **Stats**: speed, distance covered and team ball possession are drawn on the output video.
+
+## Getting started
+
+```bash
+pip install -r requirements.txt
+```
+
+The repo does not include model weights or videos because they are too large for git.
+
+- Put an input clip in `input_videos/`. The original project used a clip from the Kaggle *DFL – Bundesliga Data Shootout* dataset.
+- Put trained weights in `models/` (for example `models/yolo11x_epochs100_batch8/best.pt`), or train your own with the notebook below.
+- Update the paths at the top of `main.py` if needed, then run:
+
+```bash
+python main.py
+```
+
+The annotated video is written to `output_videos/`. Intermediate tracking results are cached in `stubs/`.
+
+### Training
+
+The training notebook downloads the dataset from Roboflow. Set your own API key as an environment variable first:
+
+```bash
+export ROBOFLOW_API_KEY=your_key_here
+```
+
+On Colab, set `os.environ["ROBOFLOW_API_KEY"]` in a cell, or use Colab's *Secrets* panel.
+
+## Repository structure
+
+```
+main.py                          # end-to-end pipeline
+trackers/                        # YOLO detection + ByteTrack tracking, drawing
+team_assigner/                   # K-Means jersey color clustering
+player_ball_assigner/            # ball possession
+camera_movement_estimator/       # optical-flow camera compensation
+view_transformer/                # pixel -> field coordinates
+speed_and_distance_estimator/    # per-player speed and distance
+utils/                           # video I/O, bbox helpers
+training/train_yolo11x.ipynb     # YOLOv11x fine-tuning
+development_and_analysis/        # color clustering exploration
+```
+
+## Tech stack
+
+Python, Ultralytics YOLOv11, supervision (ByteTrack), OpenCV, scikit-learn, NumPy, pandas, Roboflow.
