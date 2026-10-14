@@ -13,7 +13,7 @@ The structure of the analysis pipeline (tracker, team assigner, camera movement 
 ## What I did
 
 - **Fine-tuned YOLOv11x** (Ultralytics) on the Roboflow dataset for 4 classes: player, goalkeeper, referee, ball. I used it instead of the older YOLO models from the tutorial and compared it against a YOLOv5l baseline.
-- **Ran hyperparameter experiments**: AdamW optimizer, `lr0=0.002` with final LR factor `0.01`, a 3-epoch warm-up, mixed precision (AMP), and different image sizes (640 / 832), batch sizes and epoch budgets. See [`training/train_yolo11x.ipynb`](training/train_yolo11x.ipynb).
+- **Ran hyperparameter experiments**: default vs. AdamW optimizer, `lr0=0.002` with final LR factor `0.01`, a 3-epoch warm-up, mixed precision (AMP), and different image sizes (640 / 832), batch sizes and epoch budgets.
 - **Plugged the fine-tuned detector into the full pipeline** and evaluated it end to end on match footage.
 - **Wrote the capstone report** covering the method, the experiments and their limitations.
 
@@ -25,8 +25,12 @@ Best fine-tuned YOLOv11x run, on the validation split (38 images, 905 objects):
 |---|---|
 | mAP@50 | **0.866** |
 | mAP@50-95 | **0.649** |
+| Precision | 0.970 |
+| Recall | 0.752 |
 
-The ball is the hardest class: it is very small at 640 px and often blurred by motion.
+Run configuration: YOLOv11x (COCO-pretrained), AdamW, `lr0=0.002`, `lrf=0.01`, 3 warm-up epochs, AMP, image size 832, batch 8, on a Colab GPU. The run was set to 300 epochs and stopped at epoch 184 when the Colab session ended; the numbers above are the best validation epoch. The full training log is in [`training/train_yolo11x.ipynb`](training/train_yolo11x.ipynb).
+
+The ball is the hardest object to detect: it covers only a few pixels and is often motion-blurred.
 
 ## Pipeline
 
